@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
-
 import sys
 import argparse
 import asyncio
 import logging
 import ssl
-import http
 import functools
 import signal
+from functools import partial
+
+from sdnotify import SystemdNotifier
+
 from .enums import LogLevel, Protocol
 from .utils import *
 
@@ -58,7 +59,25 @@ def parse_args():
     return parser.parse_args()
 
 
-async def amain(args):
+def exit_handler(exit_event, signum, frame):
+    logger = logging.getLogger('MAIN')
+    if exit_event.is_set():
+        logger.warning("Got second exit signal! Terminating hard.")
+        os._exit(1)
+    else:
+        logger.warning("Got first exit signal! Terminating gracefully.")
+        exit_event.set()
+
+
+async def heartbeat():
+    """ Hacky coroutine which keeps event loop spinning with some interval 
+    even if no events are coming. This is required to handle Futures and 
+    Events state change when no events are occuring."""
+    while True:
+        await asyncio.sleep(.5)
+
+
+async def amain(args, loop):
     logger = logging.getLogger('MAIN')
     if args.cert:
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
@@ -69,7 +88,23 @@ async def amain(args):
     else:
         assert not args.cafile, "TLS auth required, but TLS is not enabled"
         context = None
+
     # instantiate server here
+    logger.info("Server started.")
+
+    exit_event = asyncio.Event()
+    beat = asyncio.ensure_future(heartbeat())
+    sig_handler = partial(exit_handler, exit_event)
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
+    notifier = await loop.run_in_executor(None, SystemdNotifier)
+    await loop.run_in_executor(None, notifier.notify, "READY=1")
+    await exit_event.wait()
+
+    logger.debug("Eventloop interrupted. Shutting down server...")
+    await loop.run_in_executor(None, notifier.notify, "STOPPING=1")
+    beat.cancel()
+    await responder.stop()
 
 
 def main():
@@ -86,4 +121,6 @@ def main():
                         "Falling back to built-in event loop.")
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(amain(args))
+    loop.run_until_complete(amain(args, loop))
+    loop.close()
+    logger.info("Server finished its work.")
