@@ -9,12 +9,13 @@ from functools import partial
 
 from sdnotify import SystemdNotifier
 
-from .enums import LogLevel, Protocol
+from .enums import LogLevel
 from .utils import *
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
+        description="Yet another TCP-over-HTTP(S) tunnel",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("dst_host",
