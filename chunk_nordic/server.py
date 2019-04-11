@@ -30,7 +30,7 @@ def parse_args():
                         help="logging verbosity",
                         type=LogLevel.__getitem__,
                         choices=list(LogLevel),
-                        default=LogLevel.warn)
+                        default=LogLevel.info)
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
                         action="store_true")
@@ -90,7 +90,7 @@ async def amain(args, loop):
         assert not args.cafile, "TLS auth required, but TLS is not enabled"
         context = None
 
-    # instantiate server here
+    # instantiate and start server here
     logger.info("Server started.")
 
     exit_event = asyncio.Event()
@@ -105,7 +105,8 @@ async def amain(args, loop):
     logger.debug("Eventloop interrupted. Shutting down server...")
     await loop.run_in_executor(None, notifier.notify, "STOPPING=1")
     beat.cancel()
-    await responder.stop()
+    # stop server here
+    #await responder.stop()
 
 
 def main():
