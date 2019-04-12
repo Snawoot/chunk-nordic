@@ -34,7 +34,8 @@ class Fork:
             await session.post(self._url,
                                data=rd(),
                                headers=headers,
-                               ssl=self._ssl_context)
+                               ssl=self._ssl_context,
+                               compress=False)
 
     async def _downstream(self, writer):
         headers = {
@@ -43,7 +44,10 @@ class Fork:
             'X-Session-Way': str(Way.downstream.value),
         }
         async with aiohttp.ClientSession(timeout=self._timeout) as session:
-            async with session.post(self._url, headers=headers, ssl=self._ssl_context) as resp:
+            async with session.post(self._url,
+                                    headers=headers,
+                                    ssl=self._ssl_context,
+                                    compress=False) as resp:
                 while True:
                     data = await resp.content.read(BUFSIZE)
                     if not data:
