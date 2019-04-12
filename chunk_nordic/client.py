@@ -86,7 +86,7 @@ async def amain(args, loop):
     logger = logging.getLogger('MAIN')
 
     if args.cert or args.cafile or args.no_hostname_check:
-        assert urlparse(args.url).scheme.lower() == 'wss', "wss:// scheme required"
+        assert urlparse(args.url).scheme.lower() == 'https', "https:// scheme required"
         context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
         if args.cafile:
             context.load_verify_locations(cafile=args.cafile)
@@ -127,8 +127,8 @@ async def amain(args, loop):
 def main():
     args = parse_args()
     logger = setup_logger('MAIN', args.verbosity)
-    setup_logger('Combiner', args.verbosity)
-    setup_logger('Joint', args.verbosity)
+    setup_logger('Splitter', args.verbosity)
+    setup_logger('Fork', args.verbosity)
 
     logger.info("Starting eventloop...")
     if not args.disable_uvloop:

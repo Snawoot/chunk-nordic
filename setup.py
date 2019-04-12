@@ -24,7 +24,7 @@ setup(name='chunk_nordic',
       entry_points={
           'console_scripts': [
               'chunk-server=chunk_nordic.server:main',
-#              'chunk-client=chunk_nordic.client:main',
+              'chunk-client=chunk_nordic.client:main',
           ],
       },
       classifiers=[
