@@ -91,10 +91,11 @@ async def amain(args, loop):
         assert not args.cafile, "TLS auth required, but TLS is not enabled"
         context = None
 
-    server = Combiner(address = args.address,
-                      port = args.port,
+    server = Combiner(address = args.bind_address,
+                      port = args.bind_port,
                       ssl_context=context,
-                      dst_address=args.dst_address,
+                      uri=args.uri,
+                      dst_host=args.dst_host,
                       dst_port=args.dst_port,
                       loop=loop)
     await server.start()

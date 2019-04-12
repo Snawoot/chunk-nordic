@@ -2,20 +2,19 @@ import asyncio
 import logging
 
 from aiohttp import web
-from .constants import *
 
 
 class Combiner:
     SHUTDOWN_TIMEOUT = 1
 
     def __init__(self, *, address=None, port=8080, ssl_context=None,
-                 uri="/chunk-nordic", dst_address, dst_port, loop=None):
+                 uri="/chunk-nordic", dst_host, dst_port, loop=None):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._address = address
         self._port = port
-        self._url = url
-        self._dst_address = dst_address
+        self._uri = uri
+        self._dst_host = dst_host
         self._dst_port = dst_port
         self._ssl_context = ssl_context
 
