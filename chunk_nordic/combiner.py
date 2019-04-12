@@ -3,7 +3,68 @@ import logging
 import uuid
 
 from aiohttp import web
-from .constants import SERVER, Way
+from .constants import SERVER, BUFSIZE, Way
+
+
+class Joint:
+    def __init__(self, dst_host, dst_port, loop=None):
+        self._dst_host = dst_host
+        self._dst_port = dst_port
+        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self._conn = asyncio.ensure_future(
+            asyncio.open_connection(dst_host, dst_port, loop=loop), loop=loop)
+        self._upstream = None
+        self._downstream = None
+
+    async def _patch_upstream(self, req):
+        await self._conn
+        try:
+            _, writer = self._conn.result()
+        except Exception as e:
+            return web.Response(text=("Connect error: %s" % str(e)),
+                                status=504,
+                                headers={"Server": SERVER})
+        try:
+            while True:
+                data = await req.content.read(BUFSIZE)
+                if not data:
+                    break
+                writer.write(data)
+                await writer.drain()
+        finally:
+            writer.close()
+            return web.Response(status=204, headers={"Server": SERVER})
+
+    async def _patch_downstream(self, req):
+        await self._conn
+        try:
+            reader, _ = self._conn.result()
+        except Exception as e:
+            return web.Response(text=("Connect error: %s" % str(e)),
+                                status=504,
+                                headers={"Server": SERVER})
+
+        resp = web.StreamResponse(
+            headers={'Content-Type': 'application/octet-stream',
+                     'Server': SERVER,})
+        resp.enable_chunked_encoding()
+        await resp.prepare(request)
+
+        try:
+            while True:
+                data = reader.read(BUFSIZE)
+                if not data:
+                    break
+                await resp.write(data)
+        finally:
+            return resp
+            
+
+    async def patch_in(self, req, way):
+        if way is Way.upstream:
+            self._patch_upstream(req)
+        elif way is Way.downstream:
+            self._patch_downstream(req)
 
 
 class Combiner:
@@ -19,6 +80,7 @@ class Combiner:
         self._dst_host = dst_host
         self._dst_port = dst_port
         self._ssl_context = ssl_context
+        self._joints = {}
 
     async def stop(self):
         await self._server.shutdown()
@@ -26,7 +88,11 @@ class Combiner:
         await self._runner.cleanup()
 
     async def _dispatch_req(self, req, sid, way):
-        return web.Response(text="OK\n", headers={"Server": SERVER})
+        if sid not in self._joints:
+            self._joints[sid] = Joint(self._dst_host,
+                                      self._dst_port,
+                                      self._loop)
+        return await self._joints[sid].patch_in(req, way)
 
     async def handler(self, request):
         peer_addr = request.transport.get_extra_info('peername')
@@ -41,13 +107,6 @@ class Combiner:
             return web.Response(status=400, text="INVALID REQUEST\n",
                                 headers={"Server": SERVER})
         return await self._dispatch_req(request, sid, way)
-
-        #resp = web.StreamResponse(
-        #    headers={'Content-Type': 'application/octet-stream'})
-        #resp.enable_chunked_encoding()
-        #await resp.prepare(request)
-        #await self._guarded_run(resp.write(self.ZEROES))
-        #return resp
 
     async def start(self):
         self._server = web.Server(self.handler)

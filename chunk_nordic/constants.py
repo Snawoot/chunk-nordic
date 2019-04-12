@@ -20,4 +20,7 @@ class LogLevel(enum.IntEnum):
 class Way(enum.Enum):
     upstream = 1
     downstream = 2
+
+
 SERVER = "nginx"
+BUFSIZE = 16 * 1024
