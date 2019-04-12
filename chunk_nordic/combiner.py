@@ -17,12 +17,14 @@ class Joint:
         self._downstream = None
 
     async def _patch_upstream(self, req):
-        await self._conn
         try:
+            await self._conn
             _, writer = self._conn.result()
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             return web.Response(text=("Connect error: %s" % str(e)),
-                                status=504,
+                                status=503,
                                 headers={"Server": SERVER})
         try:
             while True:
@@ -36,23 +38,25 @@ class Joint:
             return web.Response(status=204, headers={"Server": SERVER})
 
     async def _patch_downstream(self, req):
-        await self._conn
         try:
+            await self._conn
             reader, _ = self._conn.result()
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             return web.Response(text=("Connect error: %s" % str(e)),
-                                status=504,
+                                status=503,
                                 headers={"Server": SERVER})
 
         resp = web.StreamResponse(
             headers={'Content-Type': 'application/octet-stream',
                      'Server': SERVER,})
         resp.enable_chunked_encoding()
-        await resp.prepare(request)
+        await resp.prepare(req)
 
         try:
             while True:
-                data = reader.read(BUFSIZE)
+                data = await reader.read(BUFSIZE)
                 if not data:
                     break
                 await resp.write(data)
@@ -62,9 +66,9 @@ class Joint:
 
     async def patch_in(self, req, way):
         if way is Way.upstream:
-            self._patch_upstream(req)
+            return await self._patch_upstream(req)
         elif way is Way.downstream:
-            self._patch_downstream(req)
+            return await self._patch_downstream(req)
 
 
 class Combiner:

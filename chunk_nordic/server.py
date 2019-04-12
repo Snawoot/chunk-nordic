@@ -5,6 +5,7 @@ import logging
 import ssl
 import functools
 import signal
+import os
 from functools import partial
 
 from sdnotify import SystemdNotifier
