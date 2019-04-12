@@ -9,6 +9,7 @@ from functools import partial
 
 from sdnotify import SystemdNotifier
 
+from .combiner import Combiner
 from .enums import LogLevel
 from .utils import *
 
@@ -90,7 +91,13 @@ async def amain(args, loop):
         assert not args.cafile, "TLS auth required, but TLS is not enabled"
         context = None
 
-    # instantiate and start server here
+    server = Combiner(address = args.address,
+                      port = args.port,
+                      ssl_context=context,
+                      dst_address=args.dst_address,
+                      dst_port=args.dst_port,
+                      loop=loop)
+    await server.start()
     logger.info("Server started.")
 
     exit_event = asyncio.Event()
@@ -105,14 +112,13 @@ async def amain(args, loop):
     logger.debug("Eventloop interrupted. Shutting down server...")
     await loop.run_in_executor(None, notifier.notify, "STOPPING=1")
     beat.cancel()
-    # stop server here
-    #await responder.stop()
+    await server.stop()
 
 
 def main():
     args = parse_args()
     logger = setup_logger('MAIN', args.verbosity)
-    #pumpLogger = setup_logger(Pump.__name__, args.verbosity)
+    logger = setup_logger(Combiner.__name__, args.verbosity)
 
     logger.info("Starting eventloop...")
     if not args.disable_uvloop:
