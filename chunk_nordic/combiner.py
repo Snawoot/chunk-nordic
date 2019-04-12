@@ -124,7 +124,10 @@ class Combiner:
         except:
             return web.Response(status=400, text="INVALID REQUEST\n",
                                 headers={"Server": SERVER})
-        return await self._dispatch_req(request, sid, way)
+        try:
+            return await self._dispatch_req(request, sid, way)
+        finally:
+            self._logger.info("Client left: addr=%s, sid=%s, way=%s.", str(peer_addr), sid, way)
 
     async def start(self):
         self._server = web.Server(self.handler)
