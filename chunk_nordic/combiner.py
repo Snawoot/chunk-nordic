@@ -1,8 +1,9 @@
 import asyncio
 import logging
+import uuid
 
 from aiohttp import web
-from .constants import SERVER
+from .constants import SERVER, Way
 
 
 class Combiner:
@@ -24,14 +25,22 @@ class Combiner:
         await self._site.stop()
         await self._runner.cleanup()
 
+    async def _dispatch_req(self, req, sid, way):
+        return web.Response(text="OK\n", headers={"Server": SERVER})
+
     async def handler(self, request):
         peer_addr = request.transport.get_extra_info('peername')
-        uri = request.path
-        if uri != self._uri:
+        if request.path != self._uri:
             return web.Response(status=404, text="NOT FOUND\n",
                                 headers={"Server": SERVER})
-        self._logger.info("Client %s connected.", str(peer_addr))
-        return web.Response(text="OK")
+        try:
+            sid = uuid.UUID(hex=request.headers["X-Session-ID"])
+            way = Way(int(request.headers["X-Session-Way"]))
+            self._logger.info("Client connected: addr=%s, sid=%s, way=%s.", str(peer_addr), sid, way)
+        except:
+            return web.Response(status=400, text="INVALID REQUEST\n",
+                                headers={"Server": SERVER})
+        return await self._dispatch_req(request, sid, way)
 
         #resp = web.StreamResponse(
         #    headers={'Content-Type': 'application/octet-stream'})

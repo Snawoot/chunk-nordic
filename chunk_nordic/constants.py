@@ -17,4 +17,7 @@ class LogLevel(enum.IntEnum):
         return e in self.__members__
 
 
+class Way(enum.Enum):
+    upstream = 1
+    downstream = 2
 SERVER = "nginx"
