@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import uuid
+import weakref
 
 from aiohttp import web
 from .constants import SERVER, BUFSIZE, Way
@@ -95,7 +96,7 @@ class Combiner:
         self._dst_port = dst_port
         self._timeout = timeout
         self._ssl_context = ssl_context
-        self._joints = {}
+        self._joints = weakref.WeakValueDictionary()
 
     async def stop(self):
         await self._server.shutdown(self.SHUTDOWN_TIMEOUT)
@@ -103,12 +104,13 @@ class Combiner:
         await self._runner.cleanup()
 
     async def _dispatch_req(self, req, sid, way):
-        if sid not in self._joints:
-            self._joints[sid] = Joint(self._dst_host,
-                                      self._dst_port,
-                                      self._timeout,
-                                      self._loop)
-        return await self._joints[sid].patch_in(req, way)
+        try:
+            joint = self._joints[sid]
+        except KeyError:
+            self._logger.debug("Creating joint for session=%s", sid)
+            joint = Joint(self._dst_host, self._dst_port, self._timeout, self._loop)
+            self._joints[sid] = joint
+        return await joint.patch_in(req, way)
 
     async def handler(self, request):
         peer_addr = request.transport.get_extra_info('peername')
