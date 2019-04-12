@@ -7,14 +7,14 @@ from .constants import SERVER, BUFSIZE, Way
 
 
 class Joint:
-    def __init__(self, dst_host, dst_port, loop=None):
-        self._dst_host = dst_host
-        self._dst_port = dst_port
-        self._loop = loop if loop is not None else asyncio.get_event_loop()
+    def __init__(self, dst_host, dst_port, timeout=None, loop=None):
+        loop = loop if loop is not None else asyncio.get_event_loop()
         self._conn = asyncio.ensure_future(
-            asyncio.open_connection(dst_host, dst_port, loop=loop), loop=loop)
-        self._upstream = None
-        self._downstream = None
+            asyncio.wait_for(
+                asyncio.open_connection(dst_host, dst_port, loop=loop),
+                timeout,
+                loop=loop),
+            loop=loop)
         self._logger = logging.getLogger("Joint")
 
     async def _patch_upstream(self, req):
@@ -84,7 +84,8 @@ class Combiner:
     SHUTDOWN_TIMEOUT = 0
 
     def __init__(self, *, address=None, port=8080, ssl_context=None,
-                 uri="/chunk-nordic", dst_host, dst_port, loop=None):
+                 uri="/chunk-nordic", dst_host, dst_port, timeout=None,
+                 loop=None):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._address = address
@@ -92,6 +93,7 @@ class Combiner:
         self._uri = uri
         self._dst_host = dst_host
         self._dst_port = dst_port
+        self._timeout = timeout
         self._ssl_context = ssl_context
         self._joints = {}
 
@@ -104,6 +106,7 @@ class Combiner:
         if sid not in self._joints:
             self._joints[sid] = Joint(self._dst_host,
                                       self._dst_port,
+                                      self._timeout,
                                       self._loop)
         return await self._joints[sid].patch_in(req, way)
 

@@ -17,7 +17,8 @@ from .utils import *
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Yet another TCP-over-HTTP(S) tunnel",
+        description="Yet another TCP-over-HTTP(S) tunnel. "
+        "Server-side component.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("dst_host",
@@ -98,6 +99,7 @@ async def amain(args, loop):
                       uri=args.uri,
                       dst_host=args.dst_host,
                       dst_port=args.dst_port,
+                      timeout=args.timeout,
                       loop=loop)
     await server.start()
     logger.info("Server started.")
