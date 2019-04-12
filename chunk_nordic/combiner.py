@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiohttp import web
+from .constants import SERVER
 
 
 class Combiner:
@@ -25,6 +26,10 @@ class Combiner:
 
     async def handler(self, request):
         peer_addr = request.transport.get_extra_info('peername')
+        uri = request.path
+        if uri != self._uri:
+            return web.Response(status=404, text="NOT FOUND\n",
+                                headers={"Server": SERVER})
         self._logger.info("Client %s connected.", str(peer_addr))
         return web.Response(text="OK")
 

@@ -10,7 +10,7 @@ from functools import partial
 from sdnotify import SystemdNotifier
 
 from .combiner import Combiner
-from .enums import LogLevel
+from .constants import LogLevel
 from .utils import *
 
 

@@ -15,3 +15,6 @@ class LogLevel(enum.IntEnum):
 
     def __contains__(self, e):
         return e in self.__members__
+
+
+SERVER = "nginx"
