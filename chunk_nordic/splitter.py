@@ -1,11 +1,62 @@
 import asyncio
-import socket
 import weakref
 import logging
+import uuid
+
+import aiohttp
+
+from .constants import BUFSIZE, Way
+
+
+class Fork:
+    def __init__(self, url, ssl_context=None, timeout=None, loop=None):
+        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self._url = url
+        self._ssl_context = ssl_context
+        self._timeout = aiohttp.ClientTimeout(connect=timeout)
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._uuid = uuid.uuid4()
+
+    async def _upstream(self, reader):
+        async def rd():
+            while True:
+                data = await reader.read(BUFSIZE)
+                if not data:
+                    break
+                yield data
+
+        headers = {
+            'Content-Type': 'application/octet-stream',
+            'X-Session-ID': self._uuid.hex,
+            'X-Session-Way': str(Way.upstream.value),
+        }
+        async with aiohttp.ClientSession(timeout=self._timeout) as session:
+            await session.post(self._url,
+                               data=rd(),
+                               headers=headers,
+                               ssl=self._ssl_context)
+
+    async def _downstream(self, writer):
+        headers = {
+            'Content-Type': 'application/octet-stream',
+            'X-Session-ID': self._uuid.hex,
+            'X-Session-Way': str(Way.downstream.value),
+        }
+        async with aiohttp.ClientSession(timeout=self._timeout) as session:
+            async with session.post(self._url, headers=headers, ssl=self._ssl_context) as resp:
+                while True:
+                    data = await resp.content.read(BUFSIZE)
+                    if not data:
+                        break
+                    writer.write(data)
+                    await writer.drain()
+
+    async def split(self, reader, writer):
+        await asyncio.gather(self._upstream(reader),
+                             self._downstream(writer))
+
 
 class Splitter:
-    SHUTDOWN_TIMEOUT = 5
-
     def __init__(self, *,
                  address,
                  port,
@@ -26,47 +77,31 @@ class Splitter:
         self._server.close()
         await self._server.wait_closed()
         while self._children:
+            children = list(self._children)
+            self._children.clear()
             self._logger.debug("Cancelling %d client handlers...",
-                               len(self._children))
-            for task in self._children:
+                               len(children))
+            for task in children:
                 task.cancel()
-            await asyncio.wait(self._children)
-            # workaround for TCP server spawning handlers for a while
+            await asyncio.wait(children)
+            # workaround for TCP server keeps spawning handlers for a while
             # after wait_closed() completed
             asyncio.sleep(.5) 
 
     async def handler(self, reader, writer):
-        pass
-        #writer.transport.pause_reading()
-        #sock = writer.transport.get_extra_info('socket')
-        #if sock is not None:
-        #    try:
-        #        sock.shutdown(socket.SHUT_RD)
-        #    except TypeError:
-        #        direct_sock = socket.socket(sock.family, sock.type, sock.proto, sock.fileno())
-        #        try:
-        #            direct_sock.shutdown(socket.SHUT_RD)
-        #        finally:
-        #            direct_sock.detach()
-        #peer_addr = writer.transport.get_extra_info('peername')
-        #self._logger.info("Client %s connected", str(peer_addr))
-        #try:
-        #    while True:
-        #        await asyncio.sleep(self._interval)
-        #        writer.write(b'%.8x\r\n' % random.randrange(2**32))
-        #        await writer.drain()
-        #except (ConnectionResetError, RuntimeError, TimeoutError) as e:
-        #    self._logger.debug('Terminating handler coro with error: %s',
-        #                       str(e))
-        #except OSError as e:
-        #    self._logger.debug('Terminating handler coro with error: %s',
-        #                       str(e))
-        #    if e.errno == 107:
-        #        pass
-        #    else:
-        #        raise
-        #finally:
-        #    self._logger.info("Client %s disconnected", str(peer_addr))
+        peer_addr = writer.transport.get_extra_info('peername')
+        self._logger.info("Client %s connected", str(peer_addr))
+        try:
+            fork = Fork(self._url, self._ssl_context, self._timeout, self._loop)
+            await fork.split(reader, writer)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            self._logger.exception("Connection handler stopped with exception:"
+                                   " %s", str(e))
+        finally:
+            self._logger.info("Client %s disconnected", str(peer_addr))
+            writer.close()
 
     async def start(self):
         def _spawn(reader, writer):
@@ -75,6 +110,5 @@ class Splitter:
 
         self._server = await asyncio.start_server(_spawn,
                                                   self._address,
-                                                  self._port,
-                                                  reuse_address=True)
+                                                  self._port)
         self._logger.info("Server ready.")
