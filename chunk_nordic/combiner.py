@@ -15,6 +15,7 @@ class Joint:
             asyncio.open_connection(dst_host, dst_port, loop=loop), loop=loop)
         self._upstream = None
         self._downstream = None
+        self._logger = logging.getLogger("Joint")
 
     async def _patch_upstream(self, req):
         try:
@@ -33,6 +34,10 @@ class Joint:
                     break
                 writer.write(data)
                 await writer.drain()
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            self._logger.exception("_patch_upstream exception: %s", str(e))
         finally:
             writer.close()
             return web.Response(status=204, headers={"Server": SERVER})
@@ -60,6 +65,10 @@ class Joint:
                 if not data:
                     break
                 await resp.write(data)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            self._logger.exception("_patch_downstream exception: %s", str(e))
         finally:
             return resp
             
@@ -72,7 +81,7 @@ class Joint:
 
 
 class Combiner:
-    SHUTDOWN_TIMEOUT = 1
+    SHUTDOWN_TIMEOUT = 0
 
     def __init__(self, *, address=None, port=8080, ssl_context=None,
                  uri="/chunk-nordic", dst_host, dst_port, loop=None):
@@ -87,7 +96,7 @@ class Combiner:
         self._joints = {}
 
     async def stop(self):
-        await self._server.shutdown()
+        await self._server.shutdown(self.SHUTDOWN_TIMEOUT)
         await self._site.stop()
         await self._runner.cleanup()
 

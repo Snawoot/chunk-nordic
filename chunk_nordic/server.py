@@ -120,7 +120,8 @@ async def amain(args, loop):
 def main():
     args = parse_args()
     logger = setup_logger('MAIN', args.verbosity)
-    logger = setup_logger(Combiner.__name__, args.verbosity)
+    logger = setup_logger('Combiner', args.verbosity)
+    logger = setup_logger('Joint', args.verbosity)
 
     logger.info("Starting eventloop...")
     if not args.disable_uvloop:
