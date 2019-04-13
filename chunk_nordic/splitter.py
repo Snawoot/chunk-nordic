@@ -16,9 +16,11 @@ class Fork:
         self._timeout = aiohttp.ClientTimeout(connect=timeout)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._uuid = uuid.uuid4()
+        self._preflight_len = 10*1024*1024
 
     async def _upstream(self, reader):
         async def rd():
+            yield bytearray(self._preflight_len)
             while True:
                 data = await reader.read(BUFSIZE)
                 if not data:
@@ -29,6 +31,7 @@ class Fork:
             'Content-Type': 'application/octet-stream',
             'X-Session-ID': self._uuid.hex,
             'X-Session-Way': str(Way.upstream.value),
+            'X-Preflight-Len': str(self._preflight_len),
         }
         async with aiohttp.ClientSession(timeout=self._timeout) as session:
             await session.post(self._url,

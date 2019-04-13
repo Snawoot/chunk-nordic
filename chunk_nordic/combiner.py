@@ -121,10 +121,13 @@ class Combiner:
             sid = uuid.UUID(hex=request.headers["X-Session-ID"])
             way = Way(int(request.headers["X-Session-Way"]))
             self._logger.info("Client connected: addr=%s, sid=%s, way=%s.", str(peer_addr), sid, way)
+            preflight = int(request.headers.get('X-Preflight-Len', 0))
         except:
             return web.Response(status=400, text="INVALID REQUEST\n",
                                 headers={"Server": SERVER})
         try:
+            if preflight:
+                await request.content.readexactly(preflight)
             return await self._dispatch_req(request, sid, way)
         finally:
             self._logger.info("Client left: addr=%s, sid=%s, way=%s.", str(peer_addr), sid, way)
