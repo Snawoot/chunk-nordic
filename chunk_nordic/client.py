@@ -11,7 +11,7 @@ from sdnotify import SystemdNotifier
 
 from .splitter import Splitter
 from .constants import LogLevel
-from .utils import check_port, check_positive_float, setup_logger, enable_uvloop
+from .utils import check_port, check_positive_float, setup_logger, enable_uvloop, exit_handler
 
 
 def parse_args():
@@ -60,16 +60,6 @@ def parse_args():
                            "This option is useful for private PKI and "
                            "available only together with \"--cafile\"")
     return parser.parse_args()
-
-
-def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
-    logger = logging.getLogger('MAIN')
-    if exit_event.is_set():
-        logger.warning("Got second exit signal! Terminating hard.")
-        os._exit(1)  # pylint: disable=protected-access
-    else:
-        logger.warning("Got first exit signal! Terminating gracefully.")
-        exit_event.set()
 
 
 async def heartbeat():

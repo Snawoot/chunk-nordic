@@ -1,18 +1,15 @@
-import sys
 import argparse
 import asyncio
 import logging
 import ssl
-import functools
 import signal
-import os
 from functools import partial
 
 from sdnotify import SystemdNotifier
 
 from .combiner import Combiner
 from .constants import LogLevel
-from .utils import *
+from .utils import check_port, check_positive_float, setup_logger, enable_uvloop, exit_handler
 
 
 def parse_args():
@@ -63,16 +60,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def exit_handler(exit_event, signum, frame):
-    logger = logging.getLogger('MAIN')
-    if exit_event.is_set():
-        logger.warning("Got second exit signal! Terminating hard.")
-        os._exit(1)
-    else:
-        logger.warning("Got first exit signal! Terminating gracefully.")
-        exit_event.set()
-
-
 async def heartbeat():
     """ Hacky coroutine which keeps event loop spinning with some interval
     even if no events are coming. This is required to handle Futures and
@@ -93,8 +80,8 @@ async def amain(args, loop):
         assert not args.cafile, "TLS auth required, but TLS is not enabled"
         context = None
 
-    server = Combiner(address = args.bind_address,
-                      port = args.bind_port,
+    server = Combiner(address=args.bind_address,
+                      port=args.bind_port,
                       ssl_context=context,
                       uri=args.uri,
                       dst_host=args.dst_host,

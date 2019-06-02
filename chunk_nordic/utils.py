@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import logging
+import os
 
 
 def setup_logger(name, verbosity):
@@ -40,3 +41,13 @@ def enable_uvloop():
         return False
     else:
         return True
+
+
+def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
+    logger = logging.getLogger('MAIN')
+    if exit_event.is_set():
+        logger.warning("Got second exit signal! Terminating hard.")
+        os._exit(1)  # pylint: disable=protected-access
+    else:
+        logger.warning("Got first exit signal! Terminating gracefully.")
+        exit_event.set()
