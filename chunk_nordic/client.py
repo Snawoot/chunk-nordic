@@ -68,15 +68,15 @@ def exit_handler(exit_event, signum, frame):
     logger = logging.getLogger('MAIN')
     if exit_event.is_set():
         logger.warning("Got second exit signal! Terminating hard.")
-        os._exit(1)
+        os._exit(1)  # pylint: disable=protected-access
     else:
         logger.warning("Got first exit signal! Terminating gracefully.")
         exit_event.set()
 
 
 async def heartbeat():
-    """ Hacky coroutine which keeps event loop spinning with some interval 
-    even if no events are coming. This is required to handle Futures and 
+    """ Hacky coroutine which keeps event loop spinning with some interval
+    even if no events are coming. This is required to handle Futures and
     Events state change when no events are occuring."""
     while True:
         await asyncio.sleep(.5)
@@ -97,11 +97,11 @@ async def amain(args, loop):
         if args.cert:
             context.load_cert_chain(certfile=args.cert, keyfile=args.key)
     else:
-        context=None
+        context = None
 
 
-    server = Splitter(address = args.bind_address,
-                      port = args.bind_port,
+    server = Splitter(address=args.bind_address,
+                      port=args.bind_port,
                       ssl_context=context,
                       url=args.server_url,
                       timeout=args.timeout,

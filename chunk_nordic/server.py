@@ -74,8 +74,8 @@ def exit_handler(exit_event, signum, frame):
 
 
 async def heartbeat():
-    """ Hacky coroutine which keeps event loop spinning with some interval 
-    even if no events are coming. This is required to handle Futures and 
+    """ Hacky coroutine which keeps event loop spinning with some interval
+    even if no events are coming. This is required to handle Futures and
     Events state change when no events are occuring."""
     while True:
         await asyncio.sleep(.5)
