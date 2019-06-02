@@ -17,6 +17,8 @@ class Joint:  # pylint: disable=too-few-public-methods
                 loop=loop),
             loop=loop)
         self._logger = logging.getLogger("Joint")
+        self._writer_done = False
+        self._reader_done = False
 
     async def _patch_upstream(self, req):
         try:
@@ -25,6 +27,7 @@ class Joint:  # pylint: disable=too-few-public-methods
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
         except Exception as exc:
+            self._writer_done = True
             return web.Response(text=("Connect error: %s" % str(exc)),
                                 status=503,
                                 headers={"Server": SERVER})
@@ -43,7 +46,7 @@ class Joint:  # pylint: disable=too-few-public-methods
         else:
             return web.Response(status=204, headers={"Server": SERVER})
         finally:
-            writer.close()
+            self._writer_done = True
 
     async def _patch_downstream(self, req):
         try:
@@ -52,6 +55,7 @@ class Joint:  # pylint: disable=too-few-public-methods
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
         except Exception as exc:
+            self._reader_done = True
             return web.Response(text=("Connect error: %s" % str(exc)),
                                 status=503,
                                 headers={"Server": SERVER})
@@ -75,13 +79,25 @@ class Joint:  # pylint: disable=too-few-public-methods
             return resp
         else:
             return resp
+        finally:
+            self._reader_done = True
 
 
     async def patch_in(self, req, way):
-        if way is Way.upstream:
-            return await self._patch_upstream(req)
-        elif way is Way.downstream:
-            return await self._patch_downstream(req)
+        try:
+            if way is Way.upstream:
+                return await self._patch_upstream(req)
+            elif way is Way.downstream:
+                return await self._patch_downstream(req)
+        finally:
+            if self._writer_done and self._reader_done and self._conn is not None:
+                try:
+                    _, writer = self._conn.result()
+                except Exception:
+                    pass
+                else:
+                    writer.close()
+                    self._conn = None
 
 
 class Combiner:  # pylint: disable=too-many-instance-attributes
