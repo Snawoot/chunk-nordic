@@ -16,13 +16,13 @@ Client component accepts TCP connections and forwards them to server component v
 With basic Python event loop:
 
 ```
-pip3 install .
+pip3 install chunk-nordic
 ```
 
 With high performance uvloop event loop:
 
 ```
-pip3 install '.[uvloop]'
+pip3 install chunk-nordic[uvloop]
 ```
 
 ## Synopsis
