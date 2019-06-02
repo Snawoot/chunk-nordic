@@ -21,6 +21,9 @@ setup(name='chunk_nordic',
           'aiohttp>=3.4.4',
           'sdnotify>=0.3.2',
       ],
+      extras_require={
+          'uvloop': 'uvloop>=0.11.0',
+      },
       entry_points={
           'console_scripts': [
               'chunk-server=chunk_nordic.server:main',
