@@ -109,3 +109,27 @@ TLS options:
                         useful for private PKI and available only together
                         with "--cafile" (default: False)
 ```
+
+## Example
+
+Let's assume we have OpenVPN instance on TCP port 1194 at server gate.example.com.
+
+Server command:
+
+```
+chunk-server 127.0.0.1 1194
+```
+
+Client command:
+
+```
+chunk-client http://gate.example.com:8080/chunk-nordic
+```
+
+Fragment of client's OpenVPN config:
+
+```
+<connection>
+remote 127.0.0.1 1940 tcp
+</connection>
+```
