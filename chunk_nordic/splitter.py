@@ -8,6 +8,25 @@ import aiohttp
 from .constants import BUFSIZE, Way
 
 
+class AsyncReaderIterable:
+    def __init__(self, reader):
+        self._reader = reader
+        self._exhausted = False
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if not self._exhausted:
+            data = await self._reader.read(BUFSIZE)
+            if not data:
+                self._exhausted = True
+                raise StopAsyncIteration
+            return data
+        else:
+            raise StopAsyncIteration
+
+
 class Fork:
     def __init__(self, url, ssl_context=None, timeout=None, loop=None):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
@@ -18,13 +37,6 @@ class Fork:
         self._uuid = uuid.uuid4()
 
     async def _upstream(self, reader):
-        async def rd():
-            while True:
-                data = await reader.read(BUFSIZE)
-                if not data:
-                    break
-                yield data
-
         headers = {
             'Content-Type': 'application/octet-stream',
             'X-Session-ID': self._uuid.hex,
@@ -32,7 +44,7 @@ class Fork:
         }
         async with aiohttp.ClientSession(timeout=self._timeout) as session:
             await session.post(self._url,
-                               data=rd(),
+                               data=AsyncReaderIterable(reader),
                                headers=headers,
                                ssl=self._ssl_context,
                                compress=False)

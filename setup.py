@@ -13,7 +13,7 @@ setup(name='chunk_nordic',
       author_email='vladislav-ex-src@vm-0.com',
       license='MIT',
       packages=['chunk_nordic'],
-      python_requires='>=3.6',
+      python_requires='>=3.5.3',
       setup_requires=[
           'wheel',
       ],
