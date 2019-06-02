@@ -23,6 +23,19 @@ setup(name='chunk_nordic',
       ],
       extras_require={
           'uvloop': 'uvloop>=0.11.0',
+          'dev': [
+              'pytest>=3.0.0',
+              'pytest-cov',
+              'pytest-asyncio',
+              'pytest-timeout',
+              'pylint',
+              'tox',
+              'coverage',
+              'setuptools>=38.6.0',
+              'wheel>=0.31.0',
+              'twine>=1.11.0',
+              'cryptography>=1.6',
+          ],
       },
       entry_points={
           'console_scripts': [
