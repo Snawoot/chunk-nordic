@@ -41,6 +41,6 @@ setup(name='chunk_nordic',
           "Topic :: Internet",
           "Topic :: Security",
       ],
-	  long_description=long_description,
+      long_description=long_description,
       long_description_content_type='text/markdown',
       zip_safe=True)
