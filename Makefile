@@ -18,7 +18,7 @@ uninstall: $(VENV)
 	$(VENV)/bin/python -m pip uninstall -y $(PKG_NAME)
 
 clean:
-	$(RM) -rf $(VENV) $(PKGVENV) dist/ build/ $(PKG_NAME).egg-info/
+	$(RM) -rf $(VENV) $(PKGVENV) dist/ build/ $(PKG_NAME).egg-info/ .tox/ .coverage
 
 $(PKGVENV):
 	$(PYTHON) -m venv $(PKGVENV)
