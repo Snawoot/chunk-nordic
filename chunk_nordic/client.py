@@ -1,9 +1,7 @@
-import sys
 import argparse
 import asyncio
 import logging
 import ssl
-import functools
 import signal
 import os
 from functools import partial
@@ -13,7 +11,7 @@ from sdnotify import SystemdNotifier
 
 from .splitter import Splitter
 from .constants import LogLevel
-from .utils import *
+from .utils import check_port, check_positive_float, setup_logger, enable_uvloop
 
 
 def parse_args():
@@ -64,7 +62,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def exit_handler(exit_event, signum, frame):
+def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
     logger = logging.getLogger('MAIN')
     if exit_event.is_set():
         logger.warning("Got second exit signal! Terminating hard.")
