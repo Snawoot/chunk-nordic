@@ -7,7 +7,7 @@ from aiohttp import web
 from .constants import SERVER, BUFSIZE, Way
 
 
-class Joint:
+class Joint:  # pylint: disable=too-few-public-methods
     def __init__(self, dst_host, dst_port, timeout=None, loop=None):
         loop = loop if loop is not None else asyncio.get_event_loop()
         self._conn = asyncio.ensure_future(
@@ -22,10 +22,10 @@ class Joint:
         try:
             await self._conn
             _, writer = self._conn.result()
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
-            return web.Response(text=("Connect error: %s" % str(e)),
+        except Exception as exc:
+            return web.Response(text=("Connect error: %s" % str(exc)),
                                 status=503,
                                 headers={"Server": SERVER})
         try:
@@ -35,22 +35,24 @@ class Joint:
                     break
                 writer.write(data)
                 await writer.drain()
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
-            self._logger.exception("_patch_upstream exception: %s", str(e))
+        except Exception as exc:
+            self._logger.exception("_patch_upstream exception: %s", str(exc))
+            return web.Response(status=204, headers={"Server": SERVER})
+        else:
+            return web.Response(status=204, headers={"Server": SERVER})
         finally:
             writer.close()
-            return web.Response(status=204, headers={"Server": SERVER})
 
     async def _patch_downstream(self, req):
         try:
             await self._conn
             reader, _ = self._conn.result()
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
-            return web.Response(text=("Connect error: %s" % str(e)),
+        except Exception as exc:
+            return web.Response(text=("Connect error: %s" % str(exc)),
                                 status=503,
                                 headers={"Server": SERVER})
 
@@ -66,13 +68,14 @@ class Joint:
                 if not data:
                     break
                 await resp.write(data)
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
-            self._logger.exception("_patch_downstream exception: %s", str(e))
-        finally:
+        except Exception as exc:
+            self._logger.exception("_patch_downstream exception: %s", str(exc))
             return resp
-            
+        else:
+            return resp
+
 
     async def patch_in(self, req, way):
         if way is Way.upstream:
@@ -81,7 +84,7 @@ class Joint:
             return await self._patch_downstream(req)
 
 
-class Combiner:
+class Combiner:  # pylint: disable=too-many-instance-attributes
     SHUTDOWN_TIMEOUT = 0
 
     def __init__(self, *, address=None, port=8080, ssl_context=None,
@@ -97,6 +100,9 @@ class Combiner:
         self._timeout = timeout
         self._ssl_context = ssl_context
         self._joints = weakref.WeakValueDictionary()
+        self._server = None
+        self._runner = None
+        self._site = None
 
     async def stop(self):
         await self._server.shutdown(self.SHUTDOWN_TIMEOUT)
@@ -120,8 +126,9 @@ class Combiner:
         try:
             sid = uuid.UUID(hex=request.headers["X-Session-ID"])
             way = Way(int(request.headers["X-Session-Way"]))
-            self._logger.info("Client connected: addr=%s, sid=%s, way=%s.", str(peer_addr), sid, way)
-        except:
+            self._logger.info("Client connected: addr=%s, sid=%s, way=%s.",
+                              str(peer_addr), sid, way)
+        except Exception:
             return web.Response(status=400, text="INVALID REQUEST\n",
                                 headers={"Server": SERVER})
         try:
