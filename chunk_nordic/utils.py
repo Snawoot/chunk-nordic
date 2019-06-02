@@ -18,10 +18,15 @@ def setup_logger(name, verbosity):
 
 
 def check_port(value):
-    ivalue = int(value)
-    if not (0 < ivalue < 65536):
+    def fail():
         raise argparse.ArgumentTypeError(
             "%s is not a valid port number" % value)
+    try:
+        ivalue = int(value)
+    except ValueError:
+        fail()
+    if not 0 < ivalue < 65536:
+        fail()
     return ivalue
 
 
@@ -37,7 +42,7 @@ def enable_uvloop():
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    except:
+    except ImportError:
         return False
     else:
         return True
