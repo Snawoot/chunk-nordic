@@ -3,7 +3,6 @@ import asyncio
 import logging
 import ssl
 import signal
-import os
 from functools import partial
 from urllib.parse import urlparse
 
