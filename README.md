@@ -7,7 +7,7 @@ Client component accepts TCP connections and forwards them to server component v
 
 ## Requirements
 
-* Python 3.5+
+* Python 3.5.3+
 * aiohttp
 * sdnotify
 
