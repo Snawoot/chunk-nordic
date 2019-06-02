@@ -68,7 +68,7 @@ async def heartbeat():
         await asyncio.sleep(.5)
 
 
-async def amain(args, loop):
+async def amain(args, loop):  # pragma: no cover
     logger = logging.getLogger('MAIN')
     if args.cert:
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
@@ -106,7 +106,7 @@ async def amain(args, loop):
     await server.stop()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
     logger = setup_logger('MAIN', args.verbosity)
     setup_logger('Combiner', args.verbosity)

@@ -69,7 +69,7 @@ async def heartbeat():
         await asyncio.sleep(.5)
 
 
-async def amain(args, loop):
+async def amain(args, loop):  # pragma: no cover
     logger = logging.getLogger('MAIN')
 
     if args.cert or args.cafile or args.no_hostname_check:
@@ -111,7 +111,7 @@ async def amain(args, loop):
     await server.stop()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
     logger = setup_logger('MAIN', args.verbosity)
     setup_logger('Splitter', args.verbosity)
