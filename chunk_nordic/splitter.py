@@ -103,7 +103,7 @@ class Splitter:  # pylint: disable=too-many-instance-attributes
             await asyncio.wait(children)
             # workaround for TCP server keeps spawning handlers for a while
             # after wait_closed() completed
-            asyncio.sleep(.5)
+            await asyncio.sleep(.5)
 
     async def handler(self, reader, writer):
         peer_addr = writer.transport.get_extra_info('peername')
