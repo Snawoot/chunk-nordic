@@ -27,7 +27,7 @@ class AsyncReaderIterable:
             raise StopAsyncIteration
 
 
-class Fork:
+class Fork:  # pylint: disable=too-few-public-methods
     def __init__(self, url, ssl_context=None, timeout=None, loop=None):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._url = url
@@ -72,7 +72,7 @@ class Fork:
                              self._downstream(writer))
 
 
-class Splitter:
+class Splitter:  # pylint: disable=too-many-instance-attributes
     def __init__(self, *,
                  address,
                  port,
@@ -88,6 +88,7 @@ class Splitter:
         self._ssl_context = ssl_context
         self._timeout = timeout
         self._children = weakref.WeakSet()
+        self._server = None
 
     async def stop(self):
         self._server.close()
@@ -102,7 +103,7 @@ class Splitter:
             await asyncio.wait(children)
             # workaround for TCP server keeps spawning handlers for a while
             # after wait_closed() completed
-            asyncio.sleep(.5) 
+            asyncio.sleep(.5)
 
     async def handler(self, reader, writer):
         peer_addr = writer.transport.get_extra_info('peername')
@@ -110,11 +111,11 @@ class Splitter:
         try:
             fork = Fork(self._url, self._ssl_context, self._timeout, self._loop)
             await fork.split(reader, writer)
-        except asyncio.CancelledError:
+        except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as e:
+        except Exception as exc:
             self._logger.exception("Connection handler stopped with exception:"
-                                   " %s", str(e))
+                                   " %s", str(exc))
         finally:
             self._logger.info("Client %s disconnected", str(peer_addr))
             writer.close()
