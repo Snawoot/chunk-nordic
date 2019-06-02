@@ -13,9 +13,6 @@ class LogLevel(enum.IntEnum):
     def __str__(self):
         return self.name
 
-    def __contains__(self, e):
-        return e in self.__members__
-
 
 class Way(enum.Enum):
     upstream = 1
