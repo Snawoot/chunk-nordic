@@ -5,6 +5,16 @@ Yet another TCP-over-HTTP(S) tunnel.
 
 Client component accepts TCP connections and forwards them to server component via pair of HTTP(S) connections in streaming mode (`Content-Encoding: chunked`). Server component forwards connections to target host and port (e.g. to VPN daemon).
 
+## Features
+
+* Multi-link full asynchronous operation.
+* Client support operation via proxy server (via HTTP\_PROXY, HTTPS\_PROXY environment variables and .netrc file).
+* Advanced TLS support:
+  * Supports custom CAs for client and server.
+  * Supports mutual TLS authentication between client and server with certificates.
+
+For TLS reference see "TLS options" group in invokation synopsis.
+
 ## Requirements
 
 * Python 3.5.3+
