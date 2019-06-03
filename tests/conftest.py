@@ -175,3 +175,41 @@ async def tls_splitter_close(event_loop, tls_combiner_close):
     finally:
         await server.stop()
 
+@pytest.fixture(scope="session")
+@async_generator
+async def tls_auth_combiner_close(event_loop, conn_closing_server):
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(certfile='/tmp/certs/localhost.pem',
+                            keyfile='/tmp/certs/localhost.key')
+    context.load_verify_locations(cafile='/tmp/client-certs/ca.pem')
+    context.verify_mode = ssl.CERT_REQUIRED
+    server = Combiner(address="127.0.0.1",
+                      port=1444,
+                      ssl_context=context,
+                      uri="/chunk-nordic",
+                      dst_host="127.0.0.1",
+                      dst_port=1313,
+                      loop=event_loop)
+    await server.start()
+    try:
+        await yield_(server)
+    finally:
+        await server.stop()
+
+@pytest.fixture(scope="session")
+@async_generator
+async def tls_auth_splitter_close(event_loop, tls_auth_combiner_close):
+    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    context.load_cert_chain(certfile='/tmp/client-certs/client1.pem',
+                            keyfile='/tmp/client-certs/client1.key')
+    server = Splitter(address="127.0.0.1",
+                      port=1944,
+                      ssl_context=context,
+                      url="https://localhost:1444/chunk-nordic",
+                      loop=event_loop)
+    await server.start()
+    try:
+        await yield_(server)
+    finally:
+        await server.stop()
+

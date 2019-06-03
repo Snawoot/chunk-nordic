@@ -2,8 +2,9 @@ import asyncio
 import uuid
 import os
 import hashlib
-import aiohttp
 
+import aiohttp
+import aiohttp.client_exceptions
 import pytest
 
 import chunk_nordic.constants as constants
@@ -114,3 +115,26 @@ async def test_tls_conn_close(tls_splitter_close):
     finally:
         writer.close()
 
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_auth_tls_conn_close(tls_auth_splitter_close):
+    reader, writer = await asyncio.open_connection("127.0.0.1", 1944)
+    buf = b''
+    try:
+        while True:
+            data = await reader.read(4096)
+            if not data:
+                break
+            buf += data
+        assert buf == b"MAGIC!"
+    finally:
+        writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_auth_tls_negative(tls_auth_combiner_close):
+    async with aiohttp.ClientSession() as session:
+        with pytest.raises(aiohttp.client_exceptions.ClientConnectorError) as exc:
+            async with session.get('https://localhost:1444/chunk-nordic'):
+                pass
+        assert isinstance(exc.value.os_error, ConnectionResetError)
