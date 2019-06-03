@@ -42,7 +42,7 @@ class Fork:  # pylint: disable=too-few-public-methods
             'X-Session-ID': self._uuid.hex,
             'X-Session-Way': str(Way.upstream.value),
         }
-        async with aiohttp.ClientSession(timeout=self._timeout) as session:
+        async with aiohttp.ClientSession(timeout=self._timeout, trust_env=True) as session:
             await session.post(self._url,
                                data=AsyncReaderIterable(reader),
                                headers=headers,
@@ -55,7 +55,7 @@ class Fork:  # pylint: disable=too-few-public-methods
             'X-Session-ID': self._uuid.hex,
             'X-Session-Way': str(Way.downstream.value),
         }
-        async with aiohttp.ClientSession(timeout=self._timeout) as session:
+        async with aiohttp.ClientSession(timeout=self._timeout, trust_env=True) as session:
             async with session.post(self._url,
                                     headers=headers,
                                     ssl=self._ssl_context,
