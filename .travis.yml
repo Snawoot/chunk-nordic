@@ -20,6 +20,13 @@ matrix:
     - python: 3.7
       env: TOXENV=py37-uvloop
 install:
+  - "pip install cryptography"
+  - "mkdir -p /tmp/certs /tmp/local-certs"
+  - "tests/mkcerts.py -o /tmp/certs -D localhost"
+  - "tests/mkcerts.py -o /tmp/local-certs -D localhost"
+  - "sudo mkdir -p /usr/local/share/ca-certificates/test"
+  - "sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"
+  - "sudo update-ca-certificates"
   - "pip install tox"
 script:
   - tox

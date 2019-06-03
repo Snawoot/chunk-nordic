@@ -98,3 +98,19 @@ async def test_bad_req(plaintext_combiner):
         async with session.get('http://127.0.0.1:8080/chunk-nordic') as resp:
             assert resp.status == 400
             assert resp.headers['server'] == constants.SERVER
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_tls_conn_close(tls_splitter_close):
+    reader, writer = await asyncio.open_connection("127.0.0.1", 1943)
+    buf = b''
+    try:
+        while True:
+            data = await reader.read(4096)
+            if not data:
+                break
+            buf += data
+        assert buf == b"MAGIC!"
+    finally:
+        writer.close()
+
