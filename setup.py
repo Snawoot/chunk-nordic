@@ -6,7 +6,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='chunk_nordic',
-      version='0.1.0',
+      version='0.2.0',
       description='Yet another TCP-over-HTTP(S) tunnel',
       url='https://github.com/Snawoot/chunk-nordic',
       author='Vladislav Yarmak',
@@ -48,7 +48,7 @@ setup(name='chunk_nordic',
           "Programming Language :: Python :: 3.5",
           "License :: OSI Approved :: MIT License",
           "Operating System :: OS Independent",
-          "Development Status :: 3 - Alpha",
+          "Development Status :: 4 - Beta",
           "Environment :: No Input/Output (Daemon)",
           "Intended Audience :: System Administrators",
           "Natural Language :: English",
