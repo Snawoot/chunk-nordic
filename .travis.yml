@@ -20,13 +20,6 @@ matrix:
     - python: 3.7
       env: TOXENV=py37-uvloop
 install:
-  - "sudo apt-get update"
-  - "sudo apt-get install xinetd -y"
-  - "sudo sed -i -re 's,disable(\\s*)=(\\s)*yes,disable\\1=\\2no,' /etc/xinetd.d/echo"
-  - "sudo systemctl restart xinetd || { sudo journalctl -xe ; false ; }"
-  - "sudo mkdir -p /usr/local/share/ca-certificates/test"
-  - "#sudo install -m 644 -o root -g root /tmp/certs/ca.pem /usr/local/share/ca-certificates/test/test-ca.crt"
-  - "sudo update-ca-certificates"
   - "pip install tox"
 script:
   - tox

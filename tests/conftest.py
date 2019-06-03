@@ -33,16 +33,35 @@ async def plaintext_splitter(event_loop):
 
 @pytest.fixture(scope="session")
 @async_generator
-async def plaintext_combiner(event_loop):
+async def plaintext_combiner(event_loop, echo_server):
     server = Combiner(address="127.0.0.1",
                       port=8080,
                       ssl_context=None,
                       uri="/chunk-nordic",
                       dst_host="127.0.0.1",
-                      dst_port=7,
+                      dst_port=7777,
                       loop=event_loop)
     await server.start()
     try:
         await yield_(server)
     finally:
         await server.stop()
+
+@pytest.fixture(scope="session")
+@async_generator
+async def echo_server(event_loop):
+    async def handle_echo(reader, writer):
+        try:
+            while True:
+                data = await reader.read(4096)
+                if not data:
+                    break
+                writer.write(data)
+                await writer.drain()
+        finally:
+            writer.close()
+    server = await asyncio.start_server(handle_echo, '127.0.0.1', 7777, loop=event_loop)
+    try:
+        await yield_(server)
+    finally:
+        server.close()
