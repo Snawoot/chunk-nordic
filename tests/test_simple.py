@@ -2,8 +2,11 @@ import asyncio
 import uuid
 import os
 import hashlib
+import aiohttp
 
 import pytest
+
+import chunk_nordic.constants as constants
 
 LONGTEST_LEN = 10 * 1024 * 1024
 
@@ -67,3 +70,19 @@ async def test_conn_close(plaintext_splitter_close):
             break
         buf += data
     assert buf == b"MAGIC!"
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_bad_uri(plaintext_combiner):
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://127.0.0.1:8080/') as resp:
+            assert resp.status == 404
+            assert resp.headers['server'] == constants.SERVER
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_bad_req(plaintext_combiner):
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://127.0.0.1:8080/chunk-nordic') as resp:
+            assert resp.status == 400
+            assert resp.headers['server'] == constants.SERVER

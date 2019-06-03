@@ -24,7 +24,7 @@ class Joint:  # pylint: disable=too-few-public-methods
         try:
             await self._conn
             _, writer = self._conn.result()
-        except asyncio.CancelledError:  # pylint: disable=try-except-raise
+        except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
             raise
         except Exception as exc:
             self._writer_done = True
@@ -40,7 +40,7 @@ class Joint:  # pylint: disable=too-few-public-methods
                 await writer.drain()
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             self._logger.exception("_patch_upstream exception: %s", str(exc))
             return web.Response(status=204, headers={"Server": SERVER})
         else:
@@ -52,7 +52,7 @@ class Joint:  # pylint: disable=too-few-public-methods
         try:
             await self._conn
             reader, _ = self._conn.result()
-        except asyncio.CancelledError:  # pylint: disable=try-except-raise
+        except asyncio.CancelledError:  # pragma: no cover pylint: disable=try-except-raise
             raise
         except Exception as exc:
             self._reader_done = True
@@ -74,7 +74,7 @@ class Joint:  # pylint: disable=too-few-public-methods
                 await resp.write(data)
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             self._logger.exception("_patch_downstream exception: %s", str(exc))
             return resp
         else:
@@ -93,7 +93,7 @@ class Joint:  # pylint: disable=too-few-public-methods
             if self._writer_done and self._reader_done and self._conn is not None:
                 try:
                     _, writer = self._conn.result()
-                except Exception:
+                except Exception:  # pragma: no cover
                     pass
                 else:
                     writer.close()
