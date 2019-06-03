@@ -9,7 +9,8 @@ from sdnotify import SystemdNotifier
 
 from .combiner import Combiner
 from .constants import LogLevel
-from .utils import check_port, check_positive_float, setup_logger, enable_uvloop, exit_handler
+from .utils import check_port, check_positive_float, check_loglevel, \
+    setup_logger, enable_uvloop, exit_handler, heartbeat
 
 
 def parse_args():
@@ -28,8 +29,8 @@ def parse_args():
                         help="path where connections served")
     parser.add_argument("-v", "--verbosity",
                         help="logging verbosity",
-                        type=LogLevel.__getitem__,
-                        choices=list(LogLevel),
+                        type=check_loglevel,
+                        choices=LogLevel,
                         default=LogLevel.info)
     parser.add_argument("--disable-uvloop",
                         help="do not use uvloop even if it is available",
@@ -58,14 +59,6 @@ def parse_args():
     tls_group.add_argument("-C", "--cafile",
                            help="require client TLS auth using specified CA certs")
     return parser.parse_args()
-
-
-async def heartbeat():
-    """ Hacky coroutine which keeps event loop spinning with some interval
-    even if no events are coming. This is required to handle Futures and
-    Events state change when no events are occuring."""
-    while True:
-        await asyncio.sleep(.5)
 
 
 async def amain(args, loop):  # pragma: no cover

@@ -2,6 +2,7 @@ import asyncio
 import argparse
 import logging
 import os
+from . import constants
 
 
 def setup_logger(name, verbosity):
@@ -38,6 +39,13 @@ def check_positive_float(value):
     return fvalue
 
 
+def check_loglevel(arg):
+    try:
+        return constants.LogLevel[arg]
+    except (IndexError, KeyError):
+        raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
+
+
 def enable_uvloop():
     try:
         import uvloop
@@ -56,3 +64,13 @@ def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
     else:
         logger.warning("Got first exit signal! Terminating gracefully.")
         exit_event.set()
+
+
+async def heartbeat():
+    """ Hacky coroutine which keeps event loop spinning with some interval
+    even if no events are coming. This is required to handle Futures and
+    Events state change when no events are occuring."""
+    while True:
+        await asyncio.sleep(.5)
+
+
