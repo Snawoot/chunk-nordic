@@ -1,6 +1,8 @@
 chunk-nordic
 ============
 
+[![Build Status](https://travis-ci.org/Snawoot/chunk-nordic.svg?branch=master)](https://travis-ci.org/Snawoot/chunk-nordic) [![Coverage](https://img.shields.io/badge/coverage-100%25-4dc71f.svg)](https://travis-ci.org/Snawoot/chunk-nordic) [![PyPI - Downloads](https://img.shields.io/pypi/dm/chunk-nordic.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/chunk-nordic) [![PyPI](https://img.shields.io/pypi/v/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - Status](https://img.shields.io/pypi/status/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - License](https://img.shields.io/pypi/l/chunk-nordic.svg?color=4dc71f)](https://pypi.org/project/chunk-nordic/)
+
 Yet another TCP-over-HTTP(S) tunnel.
 
 Client component accepts TCP connections and forwards them to server component via pair of HTTP(S) connections in streaming mode (`Content-Encoding: chunked`). Server component forwards connections to target host and port (e.g. to VPN daemon).
