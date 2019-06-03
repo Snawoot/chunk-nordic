@@ -64,12 +64,24 @@ async def test_long_echo(plaintext_splitter):
 async def test_conn_close(plaintext_splitter_close):
     reader, writer = await asyncio.open_connection("127.0.0.1", 1941)
     buf = b''
-    while True:
-        data = await reader.read(4096)
-        if not data:
-            break
-        buf += data
-    assert buf == b"MAGIC!"
+    try:
+        while True:
+            data = await reader.read(4096)
+            if not data:
+                break
+            buf += data
+        assert buf == b"MAGIC!"
+    finally:
+        writer.close()
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_deadend(plaintext_splitter_deadend):
+    reader, writer = await asyncio.open_connection("127.0.0.1", 1942)
+    try:
+        assert not await reader.read(4096)
+    finally:
+        writer.close()
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)

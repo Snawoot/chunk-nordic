@@ -61,6 +61,10 @@ class Fork:  # pylint: disable=too-few-public-methods
                                     ssl=self._ssl_context,
                                     compress=False) as resp:
                 try:
+                    if resp.status != 200:
+                        self._logger.error("Bad response code from upstream: "
+                                           "%d", resp.status)
+                        return
                     while True:
                         data = await resp.content.read(BUFSIZE)
                         if not data:
