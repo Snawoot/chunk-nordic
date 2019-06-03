@@ -32,10 +32,15 @@ def check_port(value):
 
 
 def check_positive_float(value):
-    fvalue = float(value)
-    if fvalue <= 0:
+    def fail():
         raise argparse.ArgumentTypeError(
             "%s is not a valid value" % value)
+    try:
+        fvalue = float(value)
+    except ValueError:
+        fail()
+    if fvalue <= 0:
+        fail()
     return fvalue
 
 
@@ -46,7 +51,7 @@ def check_loglevel(arg):
         raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
 
 
-def enable_uvloop():
+def enable_uvloop():  # pragma: no cover
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -56,7 +61,7 @@ def enable_uvloop():
         return True
 
 
-def exit_handler(exit_event, signum, frame):  # pylint: disable=unused-argument
+def exit_handler(exit_event, signum, frame):  # pragma: no cover pylint: disable=unused-argument
     logger = logging.getLogger('MAIN')
     if exit_event.is_set():
         logger.warning("Got second exit signal! Terminating hard.")
@@ -72,5 +77,3 @@ async def heartbeat():
     Events state change when no events are occuring."""
     while True:
         await asyncio.sleep(.5)
-
-
