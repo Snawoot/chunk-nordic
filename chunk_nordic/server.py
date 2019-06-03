@@ -1,3 +1,4 @@
+import sys
 import argparse
 import asyncio
 import logging
@@ -70,7 +71,10 @@ async def amain(args, loop):  # pragma: no cover
             context.load_verify_locations(cafile=args.cafile)
             context.verify_mode = ssl.CERT_REQUIRED
     else:
-        assert not args.cafile, "TLS auth required, but TLS is not enabled"
+        if args.cafile:
+            logger.fatal("TLS auth required, but TLS is not enabled. "
+                         "Terminating program.")
+            sys.exit(2)
         context = None
 
     server = Combiner(address=args.bind_address,

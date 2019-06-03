@@ -1,3 +1,4 @@
+import sys
 import argparse
 import asyncio
 import logging
@@ -66,13 +67,18 @@ async def amain(args, loop):  # pragma: no cover
     logger = logging.getLogger('MAIN')
 
     if args.cert or args.cafile or args.no_hostname_check:
-        assert urlparse(args.url).scheme.lower() == 'https', "https:// scheme required"
+        if urlparse(args.server_url).scheme.lower() != 'https':
+            logger.fatal("https:// scheme in URI required for TLS operation. "
+                         "Terminating program.")
+            sys.exit(2)
         context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
         if args.cafile:
             context.load_verify_locations(cafile=args.cafile)
         if args.no_hostname_check:
-            assert args.cafile, ("CAfile option is required when "
-                                 "hostname check is disabled")
+            if not args.cafile:
+                logger.fatal("CAfile option is required when hostname check "
+                             "is disabled. Terminating program.")
+                sys.exit(2)
             context.check_hostname = False
         if args.cert:
             context.load_cert_chain(certfile=args.cert, keyfile=args.key)
