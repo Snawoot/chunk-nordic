@@ -138,3 +138,38 @@ async def test_auth_tls_negative(tls_auth_combiner_close):
             async with session.get('https://localhost:1444/chunk-nordic'):
                 pass
         assert isinstance(exc.value.os_error, ConnectionResetError)
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_local_tls_long_echo(tls_local_splitter_echo):
+    reader, writer = await asyncio.open_connection("127.0.0.1", 1945)
+    async def read_coro(reader):
+        rd_hash = hashlib.sha256()
+        while True:
+            data = await reader.read(4096)
+            if not data:
+                break
+            rd_hash.update(data)
+        return rd_hash.digest()
+    async def write_coro(writer):
+        wr_hash = hashlib.sha256()
+        written = 0
+        while written < LONGTEST_LEN:
+            data = os.urandom(128)
+            wr_hash.update(data)
+            writer.write(data)
+            written += len(data)
+            await writer.drain()
+        return wr_hash.digest()
+    try:
+        rt = asyncio.ensure_future(read_coro(reader))
+        wt = asyncio.ensure_future(write_coro(writer))
+        wr_hash = await wt
+        await asyncio.sleep(1)
+        writer.close()
+        rd_hash = await rt
+        assert rd_hash == rd_hash
+    except:
+        writer.close()
+        raise
+
