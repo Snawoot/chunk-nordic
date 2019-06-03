@@ -60,12 +60,15 @@ class Fork:  # pylint: disable=too-few-public-methods
                                     headers=headers,
                                     ssl=self._ssl_context,
                                     compress=False) as resp:
-                while True:
-                    data = await resp.content.read(BUFSIZE)
-                    if not data:
-                        break
-                    writer.write(data)
-                    await writer.drain()
+                try:
+                    while True:
+                        data = await resp.content.read(BUFSIZE)
+                        if not data:
+                            break
+                        writer.write(data)
+                        await writer.drain()
+                finally:
+                    writer.close()
 
     async def split(self, reader, writer):
         await asyncio.gather(self._upstream(reader),
@@ -113,7 +116,7 @@ class Splitter:  # pylint: disable=too-many-instance-attributes
             await fork.split(reader, writer)
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover
             self._logger.exception("Connection handler stopped with exception:"
                                    " %s", str(exc))
         finally:

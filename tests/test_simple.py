@@ -8,7 +8,8 @@ import pytest
 LONGTEST_LEN = 10 * 1024 * 1024
 
 @pytest.mark.asyncio
-async def test_simple_echo(plaintext_splitter, plaintext_combiner):
+@pytest.mark.timeout(5)
+async def test_simple_echo(plaintext_splitter):
     data = uuid.uuid4().bytes
     reader, writer = await asyncio.open_connection("127.0.0.1", 1940)
     writer.write(data)
@@ -22,7 +23,8 @@ async def test_simple_echo(plaintext_splitter, plaintext_combiner):
     assert buf == data
 
 @pytest.mark.asyncio
-async def test_long_echo(plaintext_splitter, plaintext_combiner):
+@pytest.mark.timeout(5)
+async def test_long_echo(plaintext_splitter):
     reader, writer = await asyncio.open_connection("127.0.0.1", 1940)
     async def read_coro(reader):
         rd_hash = hashlib.sha256()
@@ -53,3 +55,15 @@ async def test_long_echo(plaintext_splitter, plaintext_combiner):
     except:
         writer.close()
         raise
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(5)
+async def test_conn_close(plaintext_splitter_close):
+    reader, writer = await asyncio.open_connection("127.0.0.1", 1941)
+    buf = b''
+    while True:
+        data = await reader.read(4096)
+        if not data:
+            break
+        buf += data
+    assert buf == b"MAGIC!"
