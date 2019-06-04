@@ -13,10 +13,10 @@ shift
 
 case "$CMD" in
     server)
-        chunk-server "$@"
+        chunk-server -a 0.0.0.0 "$@"
         ;;
     client)
-        chunk-client "$@"
+        chunk-client -a 0.0.0.0 "$@"
         ;;
     *)
         bad_arg
