@@ -1,0 +1,11 @@
+venv
+pkg_venv
+dist
+*.egg-info
+contrib
+config_examples
+tests
+.travis.yml
+.pylintrc
+tox.ini
+**/.git
