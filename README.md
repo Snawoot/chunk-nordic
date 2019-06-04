@@ -156,7 +156,7 @@ Server:
 
 ```bash
 docker run -dit \
-    -p 127.0.0.1:8461:8461 \
+    -p 8080:8080 \
     --restart unless-stopped \
     --name chunk-nordic-server yarmak/chunk-nordic \
     server 127.0.0.1 1194
@@ -166,7 +166,7 @@ Client:
 
 ```bash
 docker run -dit \
-    -p 127.0.0.1:8461:8461 \
+    -p 1940:1940 \
     --restart unless-stopped \
     --name chunk-nordic-server yarmak/chunk-nordic \
     client http://gate.example.com:8080/chunk-nordic
