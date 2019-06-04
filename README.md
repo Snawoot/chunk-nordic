@@ -37,6 +37,8 @@ With high performance uvloop event loop:
 pip3 install chunk-nordic[uvloop]
 ```
 
+If you prefer distribution via Docker image see Docker Example section below.
+
 ## Synopsis
 
 Server:
@@ -144,4 +146,28 @@ Fragment of client's OpenVPN config:
 <connection>
 remote 127.0.0.1 1940 tcp
 </connection>
+```
+
+## Docker Example
+
+For environment same as in example above:
+
+Server:
+
+```bash
+docker run -dit \
+    -p 127.0.0.1:8461:8461 \
+    --restart unless-stopped \
+    --name chunk-nordic-server yarmak/chunk-nordic \
+    server 127.0.0.1 1194
+```
+
+Client:
+
+```bash
+docker run -dit \
+    -p 127.0.0.1:8461:8461 \
+    --restart unless-stopped \
+    --name chunk-nordic-server yarmak/chunk-nordic \
+    client http://gate.example.com:8080/chunk-nordic
 ```
