@@ -19,7 +19,6 @@ setup(name='chunk_nordic',
       ],
       install_requires=[
           'aiohttp>=3.4.4',
-          'sdnotify>=0.3.2',
       ],
       extras_require={
           'uvloop': 'uvloop>=0.11.0',
