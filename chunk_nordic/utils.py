@@ -53,6 +53,7 @@ def check_loglevel(arg):
 
 def enable_uvloop():  # pragma: no cover
     try:
+        # pylint: disable=import-outside-toplevel
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
