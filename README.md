@@ -21,7 +21,6 @@ For TLS reference see "TLS options" group in invokation synopsis.
 
 * Python 3.5.3+
 * aiohttp
-* sdnotify
 
 ## Installation
 
