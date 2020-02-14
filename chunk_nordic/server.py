@@ -38,7 +38,7 @@ def parse_args():
 
     listen_group = parser.add_argument_group('listen options')
     listen_group.add_argument("-a", "--bind-address",
-                              default="127.0.0.1",
+                              default="0.0.0.0",
                               help="bind address")
     listen_group.add_argument("-p", "--bind-port",
                               default=8080,
@@ -68,7 +68,7 @@ async def amain(args, loop):  # pragma: no cover
         context.load_cert_chain(certfile=args.cert, keyfile=args.key)
         if args.cafile:
             context.load_verify_locations(cafile=args.cafile)
-            context.verify_mode = ssl.CERT_REQUIRED
+            context.verify_mode = ssl.CERT_OPTIONAL
     else:
         if args.cafile:
             logger.fatal("TLS auth required, but TLS is not enabled. "
