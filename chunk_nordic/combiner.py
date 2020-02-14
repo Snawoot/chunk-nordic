@@ -2,6 +2,7 @@ import asyncio
 import logging
 import uuid
 import weakref
+import ssl
 
 from aiohttp import web
 from .constants import SERVER, BUFSIZE, Way
@@ -119,6 +120,9 @@ class Combiner:  # pylint: disable=too-many-instance-attributes
         self._server = None
         self._runner = None
         self._site = None
+        self._tls_auth = (ssl_context is not None and
+                          not isinstance(ssl_context, bool) and
+                          ssl_context.verify_mode != ssl.CERT_NONE)
 
     async def stop(self):
         await self._server.shutdown(self.SHUTDOWN_TIMEOUT)
@@ -136,7 +140,8 @@ class Combiner:  # pylint: disable=too-many-instance-attributes
 
     async def handler(self, request):
         peer_addr = request.transport.get_extra_info('peername')
-        if request.path != self._uri:
+        peer_cert = request.transport.get_extra_info('peercert')
+        if request.path != self._uri or (self._tls_auth and peer_cert is None):
             return web.Response(status=404, text="NOT FOUND\n",
                                 headers={"Server": SERVER})
         try:
