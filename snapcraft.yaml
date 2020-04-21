@@ -1,0 +1,28 @@
+name: chunk-nordic
+version: '1.0.0'
+summary: Yet another TCP-over-HTTP(S) tunnel.
+description: >
+  Yet another TCP-over-HTTP(S) tunnel.
+  Client component accepts TCP connections and forwards them to server
+  component via pair of HTTP(S) connections in streaming mode (`Content-Encoding:
+  chunked`). Server component forwards connections to target host and port
+  (e.g. to VPN daemon).
+confinement: strict
+base: core18
+
+parts:
+  chunk-nordic:
+    plugin: python
+    python-version: python3
+    source: .
+apps:
+  server:
+    command: bin/chunk-server
+    plugs:
+      - network
+      - network-bind
+  client:
+    command: bin/chunk-client
+    plugs:
+      - network
+      - network-bind
