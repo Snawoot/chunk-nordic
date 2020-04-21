@@ -1,7 +1,7 @@
 chunk-nordic
 ============
 
-[![Build Status](https://travis-ci.org/Snawoot/chunk-nordic.svg?branch=master)](https://travis-ci.org/Snawoot/chunk-nordic) [![Coverage](https://img.shields.io/badge/coverage-100%25-4dc71f.svg)](https://travis-ci.org/Snawoot/chunk-nordic) [![PyPI - Downloads](https://img.shields.io/pypi/dm/chunk-nordic.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/chunk-nordic) [![PyPI](https://img.shields.io/pypi/v/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - Status](https://img.shields.io/pypi/status/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - License](https://img.shields.io/pypi/l/chunk-nordic.svg?color=4dc71f)](https://pypi.org/project/chunk-nordic/)
+[![Build Status](https://travis-ci.org/Snawoot/chunk-nordic.svg?branch=master)](https://travis-ci.org/Snawoot/chunk-nordic) [![Coverage](https://img.shields.io/badge/coverage-100%25-4dc71f.svg)](https://travis-ci.org/Snawoot/chunk-nordic) [![PyPI - Downloads](https://img.shields.io/pypi/dm/chunk-nordic.svg?color=4dc71f&label=PyPI%20downloads)](https://pypistats.org/packages/chunk-nordic) [![PyPI](https://img.shields.io/pypi/v/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - Status](https://img.shields.io/pypi/status/chunk-nordic.svg)](https://pypi.org/project/chunk-nordic/) [![PyPI - License](https://img.shields.io/pypi/l/chunk-nordic.svg?color=4dc71f)](https://pypi.org/project/chunk-nordic/) [![chunk-nordic](https://snapcraft.io//chunk-nordic/badge.svg)](https://snapcraft.io/chunk-nordic)
 
 Yet another TCP-over-HTTP(S) tunnel.
 
@@ -37,6 +37,16 @@ pip3 install chunk-nordic[uvloop]
 ```
 
 If you prefer distribution via Docker image see Docker Example section below.
+
+Also chunk-nordic is available on Snap Store:
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/chunk-nordic)
+
+```
+sudo snap install chunk-nordic
+```
+
+Note that binaries installed by snap are named `chunk-nordic.client` and `chunk-nordic.server`.
 
 ## Synopsis
 
