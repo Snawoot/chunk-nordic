@@ -1,5 +1,5 @@
 name: chunk-nordic
-version: '1.0.0'
+version: '0.4.0'
 summary: Yet another TCP-over-HTTP(S) tunnel.
 description: >
   Yet another TCP-over-HTTP(S) tunnel.
