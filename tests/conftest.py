@@ -3,7 +3,6 @@ import os
 import ssl
 
 import pytest
-from async_generator import yield_, async_generator
 
 from chunk_nordic.splitter import Splitter
 from chunk_nordic.combiner import Combiner
@@ -19,7 +18,6 @@ def event_loop():
     loop.close()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_splitter(event_loop, plaintext_combiner):
     server = Splitter(address="127.0.0.1",
                       port=1940,
@@ -28,12 +26,11 @@ async def plaintext_splitter(event_loop, plaintext_combiner):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_splitter_deadend(event_loop, plaintext_combiner_deadend):
     server = Splitter(address="127.0.0.1",
                       port=1942,
@@ -42,12 +39,11 @@ async def plaintext_splitter_deadend(event_loop, plaintext_combiner_deadend):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_splitter_close(event_loop, plaintext_combiner_close):
     server = Splitter(address="127.0.0.1",
                       port=1941,
@@ -56,12 +52,11 @@ async def plaintext_splitter_close(event_loop, plaintext_combiner_close):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_combiner(event_loop, echo_server):
     server = Combiner(address="127.0.0.1",
                       port=8080,
@@ -72,12 +67,11 @@ async def plaintext_combiner(event_loop, echo_server):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_combiner_deadend(event_loop):
     server = Combiner(address="127.0.0.1",
                       port=8082,
@@ -88,12 +82,11 @@ async def plaintext_combiner_deadend(event_loop):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def plaintext_combiner_close(event_loop, conn_closing_server):
     server = Combiner(address="127.0.0.1",
                       port=8081,
@@ -104,12 +97,11 @@ async def plaintext_combiner_close(event_loop, conn_closing_server):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def echo_server(event_loop):
     async def handle_echo(reader, writer):
         try:
@@ -123,12 +115,11 @@ async def echo_server(event_loop):
             writer.close()
     server = await asyncio.start_server(handle_echo, '127.0.0.1', 7777, loop=event_loop)
     try:
-        await yield_(server)
+        yield server
     finally:
         server.close()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def conn_closing_server(event_loop):
     async def handle_echo(reader, writer):
         try:
@@ -138,12 +129,11 @@ async def conn_closing_server(event_loop):
             writer.close()
     server = await asyncio.start_server(handle_echo, '127.0.0.1', 1313, loop=event_loop)
     try:
-        await yield_(server)
+        yield server
     finally:
         server.close()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_combiner_close(event_loop, conn_closing_server):
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(certfile='/tmp/certs/localhost.pem',
@@ -157,12 +147,11 @@ async def tls_combiner_close(event_loop, conn_closing_server):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_splitter_close(event_loop, tls_combiner_close):
     server = Splitter(address="127.0.0.1",
                       port=1943,
@@ -171,12 +160,11 @@ async def tls_splitter_close(event_loop, tls_combiner_close):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_auth_combiner_close(event_loop, conn_closing_server):
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(certfile='/tmp/certs/localhost.pem',
@@ -192,12 +180,11 @@ async def tls_auth_combiner_close(event_loop, conn_closing_server):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_auth_splitter_close(event_loop, tls_auth_combiner_close):
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
     context.load_cert_chain(certfile='/tmp/client-certs/client1.pem',
@@ -209,12 +196,11 @@ async def tls_auth_splitter_close(event_loop, tls_auth_combiner_close):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_local_combiner_echo(event_loop, echo_server):
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(certfile='/tmp/local-certs/localhost.pem',
@@ -228,12 +214,11 @@ async def tls_local_combiner_echo(event_loop, echo_server):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
 @pytest.fixture(scope="session")
-@async_generator
 async def tls_local_splitter_echo(event_loop, tls_local_combiner_echo):
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
     context.load_verify_locations(cafile='/tmp/local-certs/ca.pem')
@@ -244,7 +229,7 @@ async def tls_local_splitter_echo(event_loop, tls_local_combiner_echo):
                       loop=event_loop)
     await server.start()
     try:
-        await yield_(server)
+        yield server
     finally:
         await server.stop()
 
