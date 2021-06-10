@@ -11,6 +11,7 @@ class LogLevel(enum.IntEnum):
     fatal = logging.FATAL
     crit = logging.CRITICAL
 
+    # pylint: disable=invalid-str-returned
     def __str__(self):
         return self.name
 

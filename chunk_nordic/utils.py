@@ -48,6 +48,7 @@ def check_loglevel(arg):
     try:
         return constants.LogLevel[arg]
     except (IndexError, KeyError):
+        # pylint: disable=raise-missing-from
         raise argparse.ArgumentTypeError("%s is not valid loglevel" % (repr(arg),))
 
 
