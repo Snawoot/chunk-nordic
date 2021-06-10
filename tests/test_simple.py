@@ -134,7 +134,8 @@ async def test_auth_tls_conn_close(tls_auth_splitter_close):
 @pytest.mark.timeout(5)
 async def test_auth_tls_negative(tls_auth_combiner_close):
     async with aiohttp.ClientSession() as session:
-        with pytest.raises(aiohttp.client_exceptions.ClientConnectorError) as exc:
+        with pytest.raises((aiohttp.client_exceptions.ClientConnectorError,
+                            aiohttp.client_exceptions.ServerDisconnectedError)) as exc:
             async with session.get('https://localhost:1444/chunk-nordic'):
                 pass
         assert isinstance(exc.value.os_error, ConnectionResetError)
