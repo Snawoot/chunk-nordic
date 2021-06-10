@@ -138,7 +138,6 @@ async def test_auth_tls_negative(tls_auth_combiner_close):
                             aiohttp.client_exceptions.ServerDisconnectedError)) as exc:
             async with session.get('https://localhost:1444/chunk-nordic'):
                 pass
-        assert isinstance(exc.value.os_error, ConnectionResetError)
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
