@@ -3,7 +3,7 @@ LABEL maintainer="Vladislav Yarmak <vladislav-ex-src@vm-0.com>"
 
 COPY . /build
 WORKDIR /build
-RUN pip3 install --no-cache-dir .[uvloop] && \
+RUN pip3 install --no-cache-dir . && \
     mkdir -p /usr/local/bin && \
     install docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
