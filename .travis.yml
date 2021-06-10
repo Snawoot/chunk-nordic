@@ -1,5 +1,5 @@
 language: python
-dist: xenial
+dist: focal
 
 matrix:
   include:
@@ -24,6 +24,7 @@ matrix:
     - python: 3.8
       env: TOXENV=py38-uvloop
 install:
+  - "sudo apt update && apt install cargo"
   - "pip install cryptography"
   - "mkdir -p /tmp/certs /tmp/local-certs /tmp/client-certs"
   - "tests/mkcerts.py -o /tmp/certs -D localhost"
