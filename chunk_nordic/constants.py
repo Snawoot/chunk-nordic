@@ -2,6 +2,7 @@ import enum
 import logging
 
 
+# pylint: disable=invalid-name
 class LogLevel(enum.IntEnum):
     debug = logging.DEBUG
     info = logging.INFO
