@@ -13,9 +13,8 @@ class Joint:  # pylint: disable=too-few-public-methods
         loop = loop if loop is not None else asyncio.get_event_loop()
         self._conn = asyncio.ensure_future(
             asyncio.wait_for(
-                asyncio.open_connection(dst_host, dst_port, loop=loop),
-                timeout),
-            loop=loop)
+                asyncio.open_connection(dst_host, dst_port),
+                timeout))
         self._logger = logging.getLogger("Joint")
         self._writer_done = False
         self._reader_done = False
