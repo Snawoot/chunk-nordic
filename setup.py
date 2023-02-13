@@ -6,7 +6,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='chunk_nordic',
-      version='0.4.1',
+      version='0.4.2',
       description='Yet another TCP-over-HTTP(S) tunnel',
       url='https://github.com/Snawoot/chunk-nordic',
       author='Vladislav Yarmak',
